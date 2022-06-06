@@ -11,12 +11,26 @@ export type FetchMethod = (
 
 export const FetchMethodDefault = fetch
 
+export type FetchFromApiOptions = {
+  throwOnErrorResponse?: boolean
+  fetchMethod?: FetchMethod
+}
+
+const FetchFromApiOptionsDefault: FetchFromApiOptions = {
+  throwOnErrorResponse: true,
+  fetchMethod: FetchMethodDefault
+}
+
 export const fetchFromApi = async (
   url: string,
   method: string,
-  throwOnErrorResponse: boolean = true,
-  fetchMethod: FetchMethod = FetchMethodDefault
+  options?: FetchFromApiOptions
 ): Promise<Response> => {
+  const fetchMethod =
+    options?.fetchMethod ||
+    FetchFromApiOptionsDefault.fetchMethod ||
+    FetchMethodDefault
+
   let response: Response
   try {
     response = await fetchMethod(url, {
@@ -26,6 +40,11 @@ export const fetchFromApi = async (
     throw fetchErrorToHumanReadableError(error)
   }
 
+  const throwOnErrorResponse =
+    options?.throwOnErrorResponse ||
+    FetchFromApiOptionsDefault.throwOnErrorResponse ||
+    true
+
   if (throwOnErrorResponse) {
     responseToHumanReadableErrorThrowing(response)
   }
@@ -33,16 +52,39 @@ export const fetchFromApi = async (
   return response
 }
 
+export type FetchJsonBodyFromApiOptions = {
+  fetchMethod?: FetchMethod
+  humanReadableErrorThrowing?: (body: any) => void
+}
+
+const FetchJsonBodyFromApiOptionsDefault: FetchJsonBodyFromApiOptions = {
+  fetchMethod: FetchMethodDefault,
+  humanReadableErrorThrowing: responseWithJsonBodyToHumanReadableErrorThrowing
+}
+
 export const fetchJsonBodyFromApi = async <T>(
   url: string,
   method: string,
-  fetchMethod: FetchMethod = FetchMethodDefault
+  options?: FetchJsonBodyFromApiOptions
 ): Promise<T> => {
-  const response = await fetchFromApi(url, method, false, fetchMethod)
+  const fetchMethod =
+    options?.fetchMethod ||
+    FetchJsonBodyFromApiOptionsDefault.fetchMethod ||
+    FetchMethodDefault
+
+  const response = await fetchFromApi(url, method, {
+    throwOnErrorResponse: false,
+    fetchMethod
+  })
 
   const body = await response.json()
 
-  responseWithJsonBodyToHumanReadableErrorThrowing(body)
+  const humanReadableErrorThrowing =
+    options?.humanReadableErrorThrowing ||
+    FetchJsonBodyFromApiOptionsDefault.humanReadableErrorThrowing ||
+    responseWithJsonBodyToHumanReadableErrorThrowing
+
+  humanReadableErrorThrowing(body)
 
   return body as T
 }
