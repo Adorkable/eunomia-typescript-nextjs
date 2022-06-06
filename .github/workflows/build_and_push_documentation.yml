@@ -1,0 +1,29 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build and Push Documentation to Github Pages
+
+on:
+  release:
+    types: 
+      - published
+
+  workflow_dispatch:
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v3
+
+    - name: Prepare
+      run: npm install
+    
+    - name: Build
+      run: npm run generate:docs
+    
+    - name: Push
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs
