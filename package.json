@@ -1,6 +1,6 @@
 {
   "name": "@adorkable/eunomia-typescript-nextjs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The team's go-to utilities for Typescript and nextjs, named for the Greek goddess of green pastures, law and legislation",
   "scripts": {
     "prepare": "npm run build & npm run test",
